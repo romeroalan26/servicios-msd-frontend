@@ -67,6 +67,16 @@ VITE_APP_NAME=Sistema de Gestión de Servicios
 VITE_APP_VERSION=1.0.0
 ```
 
+#### Variables Disponibles
+
+| Variable           | Descripción                      | Valor por Defecto                 |
+| ------------------ | -------------------------------- | --------------------------------- |
+| `VITE_API_URL`     | URL base de la API backend       | `http://localhost:3000/api`       |
+| `VITE_APP_NAME`    | Nombre completo de la aplicación | `Sistema de Gestión de Servicios` |
+| `VITE_APP_VERSION` | Versión de la aplicación         | `1.0.0`                           |
+
+**Nota**: Todas las variables de entorno en Vite deben comenzar con `VITE_` para ser accesibles en el código del cliente.
+
 ### Instalación
 
 ```bash

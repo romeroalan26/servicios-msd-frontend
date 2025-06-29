@@ -7,6 +7,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { LoginFormData } from "../types";
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import logo from "../assets/logoOPRETFooter.png";
+import { config } from "../config";
 
 const schema = yup
   .object({
@@ -55,7 +56,7 @@ const Login: React.FC = () => {
             <img src={logo} alt="Logo Institucional" className="h-16 w-auto" />
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sistema de Gestión de Servicios
+            {config.appName}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Inicia sesión para continuar

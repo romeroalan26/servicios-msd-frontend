@@ -14,6 +14,8 @@ import {
   Bell,
 } from "lucide-react";
 import logo from "../assets/logoOPRETFooter.png";
+import { config } from "../config";
+import Version from "./Version";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -75,7 +77,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 className="h-16 w-auto mr-3"
               />
               <h1 className="text-white text-lg font-semibold">
-                Sistema de Servicios
+                {config.appShortName}
               </h1>
             </div>
             <button
@@ -118,7 +120,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               className="h-16 w-auto mr-3"
             />
             <h1 className="text-white text-lg font-semibold">
-              Sistema de Servicios
+              {config.appShortName}
             </h1>
           </div>
           <nav className="flex-1 space-y-1 px-3 py-4">
@@ -160,7 +162,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               className="h-10 w-auto mr-2"
             />
             <h1 className="text-gray-900 text-sm font-semibold">
-              Sistema de Servicios
+              {config.appShortName}
             </h1>
           </div>
 
@@ -210,6 +212,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             {children}
           </div>
         </main>
+
+        {/* Footer con versión */}
+        <footer className="border-t border-gray-200 bg-white">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex justify-between items-center">
+              <div className="text-sm text-gray-500">
+                © 2024 {config.appName}
+              </div>
+              <Version />
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
   );
