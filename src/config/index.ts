@@ -6,9 +6,6 @@ export const config = {
   // Aplicación
   appName: import.meta.env.VITE_APP_NAME || "Sistema de Gestión de Servicios",
   appVersion: import.meta.env.VITE_APP_VERSION || "1.0.0",
-
-  // Título corto para el sidebar
-  appShortName: "Sistema de Servicios",
 } as const;
 
 export default config;

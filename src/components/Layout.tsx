@@ -77,7 +77,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 className="h-16 w-auto mr-3"
               />
               <h1 className="text-white text-lg font-semibold">
-                {config.appShortName}
+                {config.appName}
               </h1>
             </div>
             <button
@@ -120,7 +120,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               className="h-16 w-auto mr-3"
             />
             <h1 className="text-white text-lg font-semibold">
-              {config.appShortName}
+              {config.appName}
             </h1>
           </div>
           <nav className="flex-1 space-y-1 px-3 py-4">
@@ -162,7 +162,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               className="h-10 w-auto mr-2"
             />
             <h1 className="text-gray-900 text-sm font-semibold">
-              {config.appShortName}
+              {config.appName}
             </h1>
           </div>
 
