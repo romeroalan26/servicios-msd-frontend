@@ -96,10 +96,10 @@ class ApiService {
     };
   }
 
-  // Métodos de usuarios
+  // Métodos de usuarios (empleados)
   async getUsers(): Promise<User[]> {
     const response: AxiosResponse<ApiResponse<any[]>> = await this.api.get(
-      "/users"
+      "/empleados"
     );
 
     // Transformar la respuesta del backend
@@ -119,7 +119,7 @@ class ApiService {
     userData: Omit<User, "id" | "createdAt" | "updatedAt">
   ): Promise<User> {
     const response: AxiosResponse<ApiResponse<any>> = await this.api.post(
-      "/users",
+      "/empleados",
       {
         nombre: userData.name,
         email: userData.email,
@@ -152,7 +152,7 @@ class ApiService {
     if (userData.isActive !== undefined) updateData.activo = userData.isActive;
 
     const response: AxiosResponse<ApiResponse<any>> = await this.api.put(
-      `/users/${id}`,
+      `/empleados/${id}`,
       updateData
     );
 
@@ -170,13 +170,13 @@ class ApiService {
   }
 
   async deleteUser(id: string): Promise<void> {
-    await this.api.delete(`/users/${id}`);
+    await this.api.delete(`/empleados/${id}`);
   }
 
   // Métodos de servicios
   async getServices(): Promise<Service[]> {
     const response: AxiosResponse<ApiResponse<any[]>> = await this.api.get(
-      "/services"
+      "/servicios"
     );
 
     // Transformar la respuesta del backend
@@ -193,7 +193,7 @@ class ApiService {
 
   async getService(id: string): Promise<Service> {
     const response: AxiosResponse<ApiResponse<any>> = await this.api.get(
-      `/services/${id}`
+      `/servicios/${id}`
     );
 
     const servicio = response.data.data!;
@@ -212,7 +212,7 @@ class ApiService {
     serviceData: Omit<Service, "id" | "createdAt" | "updatedAt">
   ): Promise<Service> {
     const response: AxiosResponse<ApiResponse<any>> = await this.api.post(
-      "/services",
+      "/servicios",
       {
         nombre: serviceData.name,
         descripcion: serviceData.description,
@@ -246,7 +246,7 @@ class ApiService {
       updateData.activo = serviceData.isActive;
 
     const response: AxiosResponse<ApiResponse<any>> = await this.api.put(
-      `/services/${id}`,
+      `/admin/servicios/${id}`,
       updateData
     );
 
@@ -263,129 +263,21 @@ class ApiService {
   }
 
   async deleteService(id: string): Promise<void> {
-    await this.api.delete(`/services/${id}`);
-  }
-
-  // Métodos de horarios de servicios
-  async getServiceSchedules(serviceId: string): Promise<ServiceSchedule[]> {
-    const response: AxiosResponse<ApiResponse<any[]>> = await this.api.get(
-      `/services/${serviceId}/schedules`
-    );
-
-    // Transformar la respuesta del backend
-    return response.data.data!.map((horario) => ({
-      id: horario.id.toString(),
-      serviceId: horario.servicioId.toString(),
-      date: horario.fecha,
-      morningShift: horario.turnoManana
-        ? {
-            id: horario.turnoManana.id.toString(),
-            position: horario.turnoManana.posicion,
-            positionName: horario.turnoManana.nombrePosicion,
-            startTime: horario.turnoManana.horaInicio,
-            endTime: horario.turnoManana.horaFin,
-            notes: horario.turnoManana.notas,
-          }
-        : undefined,
-      afternoonShift: horario.turnoTarde
-        ? {
-            id: horario.turnoTarde.id.toString(),
-            position: horario.turnoTarde.posicion,
-            positionName: horario.turnoTarde.nombrePosicion,
-            startTime: horario.turnoTarde.horaInicio,
-            endTime: horario.turnoTarde.horaFin,
-            notes: horario.turnoTarde.notas,
-          }
-        : undefined,
-      nightShift: horario.turnoNoche
-        ? {
-            id: horario.turnoNoche.id.toString(),
-            position: horario.turnoNoche.posicion,
-            positionName: horario.turnoNoche.nombrePosicion,
-            startTime: horario.turnoNoche.horaInicio,
-            endTime: horario.turnoNoche.horaFin,
-            notes: horario.turnoNoche.notas,
-          }
-        : undefined,
-      createdAt: new Date(horario.createdAt || Date.now()),
-      updatedAt: new Date(horario.updatedAt || Date.now()),
-    }));
-  }
-
-  async updateServiceSchedule(
-    serviceId: string,
-    scheduleId: string,
-    scheduleData: Partial<ServiceSchedule>
-  ): Promise<ServiceSchedule> {
-    const response: AxiosResponse<ApiResponse<any>> = await this.api.put(
-      `/services/${serviceId}/schedules/${scheduleId}`,
-      scheduleData
-    );
-
-    const horario = response.data.data!;
-    return {
-      id: horario.id.toString(),
-      serviceId: horario.servicioId.toString(),
-      date: horario.fecha,
-      morningShift: horario.turnoManana
-        ? {
-            id: horario.turnoManana.id.toString(),
-            position: horario.turnoManana.posicion,
-            positionName: horario.turnoManana.nombrePosicion,
-            startTime: horario.turnoManana.horaInicio,
-            endTime: horario.turnoManana.horaFin,
-            notes: horario.turnoManana.notas,
-          }
-        : undefined,
-      afternoonShift: horario.turnoTarde
-        ? {
-            id: horario.turnoTarde.id.toString(),
-            position: horario.turnoTarde.posicion,
-            positionName: horario.turnoTarde.nombrePosicion,
-            startTime: horario.turnoTarde.horaInicio,
-            endTime: horario.turnoTarde.horaFin,
-            notes: horario.turnoTarde.notas,
-          }
-        : undefined,
-      nightShift: horario.turnoNoche
-        ? {
-            id: horario.turnoNoche.id.toString(),
-            position: horario.turnoNoche.posicion,
-            positionName: horario.turnoNoche.nombrePosicion,
-            startTime: horario.turnoNoche.horaInicio,
-            endTime: horario.turnoNoche.horaFin,
-            notes: horario.turnoNoche.notas,
-          }
-        : undefined,
-      createdAt: new Date(horario.createdAt || Date.now()),
-      updatedAt: new Date(horario.updatedAt || Date.now()),
-    };
+    await this.api.delete(`/admin/servicios/${id}`);
   }
 
   // Métodos de selección de servicios
   async getServiceSelections(year?: number): Promise<ServiceSelection[]> {
-    const params = year ? { year } : {};
-    const response: AxiosResponse<ApiResponse<any[]>> = await this.api.get(
-      "/service-selections",
-      { params }
+    // El backend no tiene un endpoint específico para esto, usamos el estado
+    const status = await this.getSelectionStatus(
+      year || new Date().getFullYear()
     );
-
-    // Transformar la respuesta del backend
-    return response.data.data!.map((seleccion) => ({
-      id: seleccion.id.toString(),
-      serviceId: seleccion.servicioId.toString(),
-      userId: seleccion.empleadoId.toString(),
-      selectedAt: new Date(seleccion.fechaSeleccion),
-      year: seleccion.anio,
-      isConfirmed: seleccion.confirmado,
-      createdAt: new Date(seleccion.createdAt || Date.now()),
-      updatedAt: new Date(seleccion.updatedAt || Date.now()),
-    }));
+    return []; // TODO: Implementar cuando el backend lo soporte
   }
 
   async selectService(serviceId: string): Promise<ServiceSelection> {
     const response: AxiosResponse<ApiResponse<any>> = await this.api.post(
-      "/service-selections",
+      "/selecciones",
       {
         servicioId: serviceId,
       }
@@ -409,7 +301,7 @@ class ApiService {
   ): Promise<ServiceSelection | null> {
     try {
       const response: AxiosResponse<ApiResponse<any>> = await this.api.get(
-        `/service-selections/current/${year}`
+        `/selecciones/mi-seleccion`
       );
 
       const seleccion = response.data.data!;
@@ -509,9 +401,125 @@ class ApiService {
     isSelectionOpen: boolean;
   }> {
     const response: AxiosResponse<ApiResponse<any>> = await this.api.get(
-      `/service-selections/status/${year}`
+      `/selecciones/estado`
     );
     return response.data.data!;
+  }
+
+  // Métodos de turnos
+  async getShifts(): Promise<any[]> {
+    const response: AxiosResponse<ApiResponse<any[]>> = await this.api.get(
+      "/turnos/activos"
+    );
+    return response.data.data!;
+  }
+
+  // Health check
+  async healthCheck(): Promise<{ status: string }> {
+    const response: AxiosResponse<{ status: string }> = await this.api.get(
+      "/health"
+    );
+    return response.data;
+  }
+
+  // Métodos del calendario
+  async getCalendarData(
+    year: number,
+    month?: number
+  ): Promise<{
+    employees: User[];
+    services: Service[];
+    selections: ServiceSelection[];
+    assignments: any[];
+  }> {
+    try {
+      const [employees, services, selections] = await Promise.all([
+        this.getUsers(),
+        this.getServices(),
+        this.getServiceSelections(year),
+      ]);
+
+      // Obtener datos del calendario según si se especifica mes o no
+      let calendarEndpoint = `/selecciones/calendario/${year}`;
+      if (month !== undefined) {
+        calendarEndpoint += `/${month}`;
+      }
+
+      const calendarResponse: AxiosResponse<ApiResponse<any[]>> =
+        await this.api.get(calendarEndpoint);
+      const assignments = calendarResponse.data.data || [];
+
+      return {
+        employees,
+        services,
+        selections,
+        assignments,
+      };
+    } catch (error) {
+      console.error("Error al obtener datos del calendario:", error);
+      throw error;
+    }
+  }
+
+  async getSelectionProgress(): Promise<{
+    totalEmpleados: number;
+    empleadosQueSeleccionaron: number;
+    progreso: number;
+  }> {
+    try {
+      const response: AxiosResponse<ApiResponse<any>> = await this.api.get(
+        "/selecciones/progreso"
+      );
+      return response.data.data!;
+    } catch (error) {
+      console.error("Error al obtener progreso de selecciones:", error);
+      throw error;
+    }
+  }
+
+  async getCurrentPriority(year: number): Promise<{
+    id: number;
+    nombre: string;
+    email: string;
+    prioridad: number;
+    rol: string;
+  } | null> {
+    try {
+      const response: AxiosResponse<ApiResponse<any>> = await this.api.get(
+        `/selecciones/prioridad-actual?anno=${year}`
+      );
+      return response.data.data;
+    } catch (error) {
+      console.error("Error al obtener prioridad actual:", error);
+      throw error;
+    }
+  }
+
+  async getEmployeeAssignments(
+    employeeId: string,
+    year: number
+  ): Promise<any[]> {
+    try {
+      // TODO: Implementar cuando el backend lo soporte
+      // const response = await this.api.get(`/empleados/${employeeId}/asignaciones/${year}`);
+      // return response.data.data;
+      return [];
+    } catch (error) {
+      console.error("Error al obtener asignaciones del empleado:", error);
+      return [];
+    }
+  }
+
+  async getServiceSchedule(serviceId: string, year: number): Promise<any[]> {
+    try {
+      // TODO: Implementar cuando el backend lo soporte
+      // const response = await this.api.get(`/servicios/${serviceId}/horarios/${year}`);
+      // return response.data.data;
+      return [];
+    } catch (error) {
+      console.error("Error al obtener horarios del servicio:", error);
+      return [];
+    }
   }
 }
 

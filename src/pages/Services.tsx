@@ -30,6 +30,13 @@ const Services: React.FC = () => {
     maxSelections: 20,
     isSelectionOpen: false,
   });
+  const [currentPriorityEmployee, setCurrentPriorityEmployee] = useState<{
+    id: number;
+    nombre: string;
+    email: string;
+    prioridad: number;
+    rol: string;
+  } | null>(null);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [showServiceDetails, setShowServiceDetails] = useState<string | null>(
     null
@@ -38,15 +45,29 @@ const Services: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [servicesData, selectionsData, statusData] = await Promise.all([
+        const [
+          servicesData,
+          selectionsData,
+          progressData,
+          currentPriorityData,
+        ] = await Promise.all([
           apiService.getServices(),
           apiService.getServiceSelections(currentYear),
-          apiService.getSelectionStatus(currentYear),
+          apiService.getSelectionProgress(),
+          apiService.getCurrentPriority(currentYear),
         ]);
 
         setServices(servicesData);
         setSelections(selectionsData);
-        setSelectionStatus(statusData);
+        setCurrentPriorityEmployee(currentPriorityData);
+
+        // Transformar datos del progreso al formato esperado
+        setSelectionStatus({
+          currentPriority: currentPriorityData?.prioridad || 0,
+          totalSelections: progressData.empleadosQueSeleccionaron,
+          maxSelections: progressData.totalEmpleados,
+          isSelectionOpen: progressData.progreso < 100, // Asumimos que está abierto si no está completo
+        });
       } catch (error) {
         console.error("Error al cargar servicios:", error);
       } finally {
@@ -84,9 +105,19 @@ const Services: React.FC = () => {
       setSelections((prev) => [...prev, selection]);
       setSelectedService(service);
 
-      // Recargar el estado de selección
-      const statusData = await apiService.getSelectionStatus(currentYear);
-      setSelectionStatus(statusData);
+      // Recargar el progreso y la prioridad actual
+      const [progressData, currentPriorityData] = await Promise.all([
+        apiService.getSelectionProgress(),
+        apiService.getCurrentPriority(currentYear),
+      ]);
+
+      setCurrentPriorityEmployee(currentPriorityData);
+      setSelectionStatus({
+        currentPriority: currentPriorityData?.prioridad || 0,
+        totalSelections: progressData.empleadosQueSeleccionaron,
+        maxSelections: progressData.totalEmpleados,
+        isSelectionOpen: progressData.progreso < 100,
+      });
 
       alert(`¡Servicio "${service.name}" seleccionado exitosamente!`);
     } catch (error: any) {
@@ -109,6 +140,10 @@ const Services: React.FC = () => {
       return "La selección de servicios no está abierta";
     }
 
+    if (currentPriorityEmployee === null) {
+      return "Todos los empleados ya han seleccionado sus servicios";
+    }
+
     if (user.priority < selectionStatus.currentPriority) {
       return `Tu turno de selección ya pasó (prioridad ${user.priority})`;
     }
@@ -117,7 +152,11 @@ const Services: React.FC = () => {
       return `Tu turno de selección será en prioridad ${user.priority}`;
     }
 
-    return `Es tu turno de seleccionar (prioridad ${user.priority})`;
+    if (user.priority === selectionStatus.currentPriority) {
+      return `Es tu turno de seleccionar (prioridad ${user.priority})`;
+    }
+
+    return `Turno de selección: ${currentPriorityEmployee?.nombre} (Prioridad ${selectionStatus.currentPriority})`;
   };
 
   const getSelectionStatusColor = () => {
@@ -178,6 +217,11 @@ const Services: React.FC = () => {
                   Prioridad Actual: {selectionStatus.currentPriority}
                 </p>
                 <p className="text-sm text-gray-500">
+                  {currentPriorityEmployee
+                    ? currentPriorityEmployee.nombre
+                    : "Sin empleado disponible"}
+                </p>
+                <p className="text-sm text-gray-500">
                   {selectionStatus.totalSelections} de{" "}
                   {selectionStatus.maxSelections} seleccionados
                 </p>
@@ -216,6 +260,17 @@ const Services: React.FC = () => {
                   }%`,
                 }}
               ></div>
+            </div>
+            <div className="mt-3 flex items-center justify-between text-sm text-gray-500">
+              <span>
+                {selectionStatus.totalSelections} de{" "}
+                {selectionStatus.maxSelections} empleados han seleccionado
+              </span>
+              <span>
+                {selectionStatus.maxSelections -
+                  selectionStatus.totalSelections}{" "}
+                pendientes
+              </span>
             </div>
           </div>
         </div>

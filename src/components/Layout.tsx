@@ -30,6 +30,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: Home },
     { name: "Servicios", href: "/services", icon: Calendar },
+    { name: "Calendario", href: "/calendar", icon: Calendar },
     { name: "Usuarios", href: "/users", icon: Users, adminOnly: true },
     {
       name: "Configuración",

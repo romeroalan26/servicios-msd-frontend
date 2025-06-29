@@ -34,26 +34,23 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const [services, users, selections] = await Promise.all([
+        const [services, users, progress] = await Promise.all([
           apiService.getServices(),
           apiService.getUsers(),
-          apiService.getServiceSelections(stats.currentYear),
+          apiService.getSelectionProgress(),
         ]);
-
-        const completedSelections = selections.filter(
-          (s) => s.isConfirmed
-        ).length;
-        const pendingSelections = 20 - completedSelections; // 20 empleados máximo
 
         setStats({
           totalServices: services.length,
           totalUsers: users.length,
-          completedSelections,
-          pendingSelections,
+          completedSelections: progress.empleadosQueSeleccionaron,
+          pendingSelections:
+            progress.totalEmpleados - progress.empleadosQueSeleccionaron,
           currentYear: stats.currentYear,
         });
 
-        setRecentSelections(selections.slice(0, 5)); // Últimas 5 selecciones
+        // TODO: Obtener selecciones recientes cuando el endpoint esté disponible
+        setRecentSelections([]);
       } catch (error) {
         console.error("Error al cargar datos del dashboard:", error);
       } finally {
@@ -189,18 +186,26 @@ const Dashboard: React.FC = () => {
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-500">Progreso general</span>
               <span className="text-gray-900 font-medium">
-                {Math.round((stats.completedSelections / 20) * 100)}%
+                {Math.round(
+                  (stats.completedSelections / stats.totalUsers) * 100
+                )}
+                %
               </span>
             </div>
             <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
               <div
                 className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${(stats.completedSelections / 20) * 100}%` }}
+                style={{
+                  width: `${
+                    (stats.completedSelections / stats.totalUsers) * 100
+                  }%`,
+                }}
               ></div>
             </div>
             <div className="mt-3 flex items-center justify-between text-sm text-gray-500">
               <span>
-                {stats.completedSelections} de 20 empleados han seleccionado
+                {stats.completedSelections} de {stats.totalUsers} empleados han
+                seleccionado
               </span>
               <span>{stats.pendingSelections} pendientes</span>
             </div>

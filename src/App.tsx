@@ -11,6 +11,7 @@ import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Services from "./pages/Services";
+import Calendar from "./pages/Calendar";
 import useDocumentTitle from "./hooks/useDocumentTitle";
 import "./index.css";
 
@@ -44,6 +45,17 @@ const App: React.FC = () => {
                 <ProtectedRoute>
                   <Layout>
                     <Services />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/calendar"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Calendar />
                   </Layout>
                 </ProtectedRoute>
               }

@@ -128,27 +128,54 @@ El sistema está configurado para trabajar con los siguientes endpoints del back
 - `POST /api/auth/login` - Login de usuario
 - `GET /api/auth/me` - Obtener usuario actual
 
+### Empleados
+
+- `GET /api/empleados` - Lista de empleados
+- `GET /api/empleados/activos` - Lista de empleados activos
+- `GET /api/empleados/:id` - Obtener empleado específico
+- `POST /api/empleados` - Crear empleado
+- `PUT /api/empleados/:id` - Actualizar empleado
+- `DELETE /api/empleados/:id` - Eliminar empleado
+- `PUT /api/empleados/:id/rol` - Cambiar rol de empleado
+- `PUT /api/empleados/:id/prioridad` - Cambiar prioridad de empleado
+- `POST /api/empleados/reset-prioridades` - Resetear prioridades
+
 ### Servicios
 
-- `GET /api/services` - Lista de servicios
-- `GET /api/services/:id` - Obtener servicio específico
-- `POST /api/services` - Crear servicio
-- `PUT /api/services/:id` - Actualizar servicio
-- `DELETE /api/services/:id` - Eliminar servicio
+- `GET /api/servicios` - Lista de servicios
+- `GET /api/servicios/:id` - Obtener servicio específico
+- `POST /api/servicios` - Crear servicio (solo admin)
+- `POST /api/servicios/:id/dias` - Agregar día a servicio (solo admin)
+- `PUT /api/admin/servicios/:id` - Actualizar servicio (solo admin)
+- `DELETE /api/admin/servicios/:id` - Eliminar servicio (solo admin)
 
 ### Selecciones
 
-- `GET /api/service-selections` - Lista de selecciones
-- `POST /api/service-selections` - Crear selección
-- `GET /api/service-selections/current/:year` - Selección actual del usuario
-- `GET /api/service-selections/status/:year` - Estado de selecciones
+- `GET /api/selecciones/disponibles` - Servicios disponibles para selección
+- `POST /api/selecciones` - Crear selección
+- `GET /api/selecciones/mi-seleccion` - Obtener mi selección actual
+- `GET /api/selecciones/estado` - Estado de selecciones
+- `PATCH /api/selecciones/intercambiar-dia` - Intercambiar días
+- `POST /api/selecciones/liberar` - Liberar selección (solo admin)
 
-### Usuarios
+### Turnos
 
-- `GET /api/users` - Lista de usuarios
-- `POST /api/users` - Crear usuario
-- `PUT /api/users/:id` - Actualizar usuario
-- `DELETE /api/users/:id` - Eliminar usuario
+- `GET /api/turnos` - Lista de turnos (con paginación)
+- `GET /api/turnos/activos` - Turnos activos (sin paginación)
+- `GET /api/turnos/:id` - Obtener turno específico
+- `POST /api/turnos` - Crear turno (solo admin)
+- `PUT /api/turnos/:id` - Actualizar turno (solo admin)
+- `DELETE /api/turnos/:id` - Eliminar turno (solo admin)
+
+### Administración
+
+- `GET /api/admin/audit-log` - Log de auditoría
+- `POST /api/admin/reset-anno` - Resetear año
+- `POST /api/admin/clean-audit-logs` - Limpiar logs antiguos
+
+### Sistema
+
+- `GET /api/health` - Health check de la API
 
 ## Estructura de Datos
 
