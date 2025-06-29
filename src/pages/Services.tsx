@@ -12,9 +12,14 @@ import {
   Users,
   Info,
 } from "lucide-react";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 const Services: React.FC = () => {
   const { user } = useAuth();
+
+  // Establecer el título de la página
+  useDocumentTitle("Servicios");
+
   const [services, setServices] = useState<Service[]>([]);
   const [selections, setSelections] = useState<ServiceSelection[]>([]);
   const [currentYear] = useState(new Date().getFullYear());

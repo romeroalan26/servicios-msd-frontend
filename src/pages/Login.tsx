@@ -8,6 +8,7 @@ import { LoginFormData } from "../types";
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import logo from "../assets/logoOPRETFooter.png";
 import { config } from "../config";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 const schema = yup
   .object({
@@ -25,6 +26,9 @@ const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  // Establecer el título de la página
+  useDocumentTitle("Iniciar Sesión");
 
   const {
     register,

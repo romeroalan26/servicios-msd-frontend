@@ -11,9 +11,14 @@ import {
   TrendingUp,
   UserCheck,
 } from "lucide-react";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
+
+  // Establecer el título de la página
+  useDocumentTitle("Dashboard");
+
   const [stats, setStats] = useState({
     totalServices: 0,
     totalUsers: 0,

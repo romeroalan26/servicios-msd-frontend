@@ -11,9 +11,13 @@ import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Services from "./pages/Services";
+import useDocumentTitle from "./hooks/useDocumentTitle";
 import "./index.css";
 
 const App: React.FC = () => {
+  // Establecer el título por defecto de la aplicación
+  useDocumentTitle();
+
   return (
     <AuthProvider>
       <Router>
