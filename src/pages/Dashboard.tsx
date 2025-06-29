@@ -25,6 +25,7 @@ const Dashboard: React.FC = () => {
     completedSelections: 0,
     pendingSelections: 0,
     currentYear: new Date().getFullYear(),
+    currentPriorityEmployee: null as any,
   });
   const [recentSelections, setRecentSelections] = useState<ServiceSelection[]>(
     []
@@ -34,19 +35,18 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const [services, users, progress] = await Promise.all([
-          apiService.getServices(),
-          apiService.getUsers(),
-          apiService.getSelectionProgress(),
-        ]);
+        const currentYear = new Date().getFullYear();
+
+        // Usar el nuevo endpoint simplificado de KPIs
+        const kpis = await apiService.getDashboardKpis(currentYear);
 
         setStats({
-          totalServices: services.length,
-          totalUsers: users.length,
-          completedSelections: progress.empleadosQueSeleccionaron,
-          pendingSelections:
-            progress.totalEmpleados - progress.empleadosQueSeleccionaron,
-          currentYear: stats.currentYear,
+          totalServices: kpis.totalServicios,
+          totalUsers: kpis.totalUsuarios,
+          completedSelections: kpis.seleccionesCompletadas,
+          pendingSelections: kpis.seleccionesPendientes,
+          currentYear,
+          currentPriorityEmployee: null, // TODO: Obtener por separado si es necesario
         });
 
         // TODO: Obtener selecciones recientes cuando el endpoint esté disponible
@@ -175,6 +175,32 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Empleado con prioridad actual */}
+      {stats.currentPriorityEmployee && (
+        <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="p-5">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <TrendingUp className="h-6 w-6 text-blue-400" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Empleado con Prioridad Actual
+                  </dt>
+                  <dd className="text-lg font-medium text-gray-900">
+                    {stats.currentPriorityEmployee.nombre}
+                  </dd>
+                  <dd className="text-sm text-gray-500">
+                    Prioridad: {stats.currentPriorityEmployee.prioridad}
+                  </dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Progreso de selecciones */}
       <div className="bg-white shadow rounded-lg">

@@ -11,8 +11,10 @@ import {
   User,
   Users,
   Info,
+  X,
 } from "lucide-react";
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import ServiceDetailsModal from "../components/ServiceDetailsModal";
 
 const Services: React.FC = () => {
   const { user } = useAuth();
@@ -41,6 +43,17 @@ const Services: React.FC = () => {
   const [showServiceDetails, setShowServiceDetails] = useState<string | null>(
     null
   );
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedServiceForModal, setSelectedServiceForModal] = useState<
+    string | null
+  >(null);
+  const [isSelectingService, setIsSelectingService] = useState<string | null>(
+    null
+  );
+  const [notification, setNotification] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -78,6 +91,16 @@ const Services: React.FC = () => {
     fetchData();
   }, [currentYear]);
 
+  // Auto-ocultar notificación después de 5 segundos
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => {
+        setNotification(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
+
   const canSelectService = () => {
     if (!user || user.role !== "employee" || !user.priority) return false;
     return (
@@ -100,8 +123,10 @@ const Services: React.FC = () => {
   const handleSelectService = async (service: Service) => {
     if (!canSelectService()) return;
 
+    setIsSelectingService(service.id);
+
     try {
-      const selection = await apiService.selectService(service.id);
+      const selection = await apiService.selectService(service.id, currentYear);
       setSelections((prev) => [...prev, selection]);
       setSelectedService(service);
 
@@ -119,12 +144,25 @@ const Services: React.FC = () => {
         isSelectionOpen: progressData.progreso < 100,
       });
 
-      alert(`¡Servicio "${service.name}" seleccionado exitosamente!`);
+      setNotification({
+        type: "success",
+        message: `¡Servicio "${service.name}" seleccionado exitosamente!`,
+      });
     } catch (error: any) {
-      alert(
-        error.response?.data?.message || "Error al seleccionar el servicio"
-      );
+      const errorMessage =
+        error.response?.data?.message || "Error al seleccionar el servicio";
+      setNotification({
+        type: "error",
+        message: `Error: ${errorMessage}`,
+      });
+    } finally {
+      setIsSelectingService(null);
     }
+  };
+
+  const handleViewServiceDetails = (serviceId: string) => {
+    setSelectedServiceForModal(serviceId);
+    setIsDetailsModalOpen(true);
   };
 
   const getSelectionStatusText = () => {
@@ -318,11 +356,7 @@ const Services: React.FC = () => {
 
                   <div className="flex items-center space-x-2">
                     <button
-                      onClick={() =>
-                        setShowServiceDetails(
-                          showServiceDetails === service.id ? null : service.id
-                        )
-                      }
+                      onClick={() => handleViewServiceDetails(service.id)}
                       className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                     >
                       <Eye className="h-4 w-4" />
@@ -331,9 +365,17 @@ const Services: React.FC = () => {
                     {canSelect && (
                       <button
                         onClick={() => handleSelectService(service)}
-                        className="bg-blue-600 text-white px-3 py-1 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
+                        disabled={isSelectingService === service.id}
+                        className="bg-blue-600 text-white px-3 py-1 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        Seleccionar
+                        {isSelectingService === service.id ? (
+                          <div className="flex items-center space-x-1">
+                            <div className="animate-spin rounded-full h-3 w-3 border-b border-white"></div>
+                            <span>Seleccionando...</span>
+                          </div>
+                        ) : (
+                          "Seleccionar"
+                        )}
                       </button>
                     )}
 
@@ -414,6 +456,39 @@ const Services: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal de detalles del servicio */}
+      <ServiceDetailsModal
+        serviceId={selectedServiceForModal}
+        isOpen={isDetailsModalOpen}
+        onClose={() => {
+          setIsDetailsModalOpen(false);
+          setSelectedServiceForModal(null);
+        }}
+      />
+
+      {/* Notificación */}
+      {notification && (
+        <div className="fixed top-4 right-4 z-50">
+          <div
+            className={`px-4 py-3 rounded-md shadow-lg ${
+              notification.type === "success"
+                ? "bg-green-100 border border-green-400 text-green-700"
+                : "bg-red-100 border border-red-400 text-red-700"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span>{notification.message}</span>
+              <button
+                onClick={() => setNotification(null)}
+                className="ml-4 text-gray-500 hover:text-gray-700"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

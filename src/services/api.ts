@@ -6,6 +6,8 @@ import {
   ServiceSelection,
   EmailConfig,
   ApiResponse,
+  PaginatedResponse,
+  PaginationInfo,
 } from "../types";
 import { config } from "../config";
 
@@ -97,7 +99,45 @@ class ApiService {
   }
 
   // Métodos de usuarios (empleados)
-  async getUsers(): Promise<User[]> {
+  async getUsers(
+    page?: number,
+    limit?: number
+  ): Promise<PaginatedResponse<User>> {
+    const params = new URLSearchParams();
+    if (page) params.append("page", page.toString());
+    if (limit) params.append("limit", limit.toString());
+
+    const response: AxiosResponse<ApiResponse<any[]>> = await this.api.get(
+      `/empleados?${params.toString()}`
+    );
+
+    // Transformar la respuesta del backend
+    const users = response.data.data!.map((empleado) => ({
+      id: empleado.id.toString(),
+      name: empleado.nombre,
+      email: empleado.email,
+      role: empleado.rol,
+      priority: empleado.prioridad,
+      isActive: empleado.activo,
+      createdAt: new Date(empleado.createdAt || Date.now()),
+      updatedAt: new Date(empleado.updatedAt || Date.now()),
+    }));
+
+    return {
+      users,
+      pagination: response.data.pagination || {
+        page: 1,
+        limit: 10,
+        totalElements: users.length,
+        totalPages: 1,
+        hasNext: false,
+        hasPrevious: false,
+      },
+    };
+  }
+
+  // Método para obtener todos los usuarios sin paginación (para compatibilidad)
+  async getAllUsers(): Promise<User[]> {
     const response: AxiosResponse<ApiResponse<any[]>> = await this.api.get(
       "/empleados"
     );
@@ -116,13 +156,16 @@ class ApiService {
   }
 
   async createUser(
-    userData: Omit<User, "id" | "createdAt" | "updatedAt">
+    userData: Omit<User, "id" | "createdAt" | "updatedAt"> & {
+      password: string;
+    }
   ): Promise<User> {
     const response: AxiosResponse<ApiResponse<any>> = await this.api.post(
       "/empleados",
       {
         nombre: userData.name,
         email: userData.email,
+        password: userData.password,
         rol: userData.role,
         prioridad: userData.priority,
         activo: userData.isActive,
@@ -173,10 +216,35 @@ class ApiService {
     await this.api.delete(`/empleados/${id}`);
   }
 
+  async resetUserPassword(id: string, newPassword: string): Promise<void> {
+    await this.api.post(`/empleados/${id}/reset-password`, {
+      password: newPassword,
+    });
+  }
+
+  async updateUserPriority(id: string, priority: number): Promise<User> {
+    const response: AxiosResponse<ApiResponse<any>> = await this.api.put(
+      `/empleados/${id}/prioridad`,
+      { prioridad: priority }
+    );
+
+    const empleado = response.data.data!;
+    return {
+      id: empleado.id.toString(),
+      name: empleado.nombre,
+      email: empleado.email,
+      role: empleado.rol,
+      priority: empleado.prioridad,
+      isActive: empleado.activo,
+      createdAt: new Date(empleado.createdAt || Date.now()),
+      updatedAt: new Date(empleado.updatedAt || Date.now()),
+    };
+  }
+
   // Métodos de servicios
   async getServices(): Promise<Service[]> {
     const response: AxiosResponse<ApiResponse<any[]>> = await this.api.get(
-      "/servicios"
+      "/servicios?limit=100"
     );
 
     // Transformar la respuesta del backend
@@ -206,6 +274,30 @@ class ApiService {
       createdAt: new Date(servicio.createdAt || Date.now()),
       updatedAt: new Date(servicio.updatedAt || Date.now()),
     };
+  }
+
+  async getServiceDetails(id: string): Promise<{
+    id: number;
+    nombre: string;
+    descripcion: string;
+    activo: boolean;
+    created_at: string;
+    updated_at: string;
+    dias: Array<{
+      id: number;
+      servicio_id: number;
+      fecha: string;
+      tanda: string;
+      turno_id: number;
+      turno_codigo: string;
+      turno_nombre: string;
+      excepciones: any[];
+    }>;
+  }> {
+    const response: AxiosResponse<ApiResponse<any>> = await this.api.get(
+      `/servicios/${id}`
+    );
+    return response.data.data!;
   }
 
   async createService(
@@ -275,24 +367,30 @@ class ApiService {
     return []; // TODO: Implementar cuando el backend lo soporte
   }
 
-  async selectService(serviceId: string): Promise<ServiceSelection> {
+  async selectService(
+    serviceId: string,
+    year?: number
+  ): Promise<ServiceSelection> {
+    const currentYear = year || new Date().getFullYear();
+
     const response: AxiosResponse<ApiResponse<any>> = await this.api.post(
       "/selecciones",
       {
-        servicioId: serviceId,
+        servicio_id: parseInt(serviceId),
+        anno: currentYear,
       }
     );
 
     const seleccion = response.data.data!;
     return {
       id: seleccion.id.toString(),
-      serviceId: seleccion.servicioId.toString(),
-      userId: seleccion.empleadoId.toString(),
-      selectedAt: new Date(seleccion.fechaSeleccion),
-      year: seleccion.anio,
-      isConfirmed: seleccion.confirmado,
-      createdAt: new Date(seleccion.createdAt || Date.now()),
-      updatedAt: new Date(seleccion.updatedAt || Date.now()),
+      serviceId: seleccion.servicio_id.toString(),
+      userId: seleccion.empleado_id.toString(),
+      selectedAt: new Date(seleccion.created_at),
+      year: seleccion.anno,
+      isConfirmed: true, // Asumimos que está confirmado al crearse
+      createdAt: new Date(seleccion.created_at),
+      updatedAt: new Date(seleccion.updated_at),
     };
   }
 
@@ -394,16 +492,54 @@ class ApiService {
   }
 
   // Métodos de utilidad
+  async getDashboardKpis(year: number): Promise<{
+    totalServicios: number;
+    totalUsuarios: number;
+    seleccionesCompletadas: number;
+    seleccionesPendientes: number;
+  }> {
+    const response: AxiosResponse<ApiResponse<any>> = await this.api.get(
+      `/selecciones/kpis?anno=${year}`
+    );
+    return response.data.data!;
+  }
+
   async getSelectionStatus(year: number): Promise<{
     currentPriority: number;
     totalSelections: number;
     maxSelections: number;
     isSelectionOpen: boolean;
+    estadisticas: {
+      total_selecciones: number;
+      empleados_con_seleccion: number;
+      servicios_seleccionados: number;
+    };
+    currentPriorityEmployee: {
+      id: number;
+      nombre: string;
+      email: string;
+      prioridad: number;
+      rol: string;
+    } | null;
   }> {
     const response: AxiosResponse<ApiResponse<any>> = await this.api.get(
-      `/selecciones/estado`
+      `/selecciones/estado?anno=${year}`
     );
-    return response.data.data!;
+
+    // Extraer las estadísticas del endpoint
+    const data = response.data.data!;
+    return {
+      currentPriority: data.proximo_empleado?.prioridad || 0,
+      totalSelections: data.estadisticas?.empleados_con_seleccion || 0,
+      maxSelections: 20, // Total de empleados
+      isSelectionOpen: data.proximo_empleado !== null,
+      estadisticas: data.estadisticas || {
+        total_selecciones: 0,
+        empleados_con_seleccion: 0,
+        servicios_seleccionados: 0,
+      },
+      currentPriorityEmployee: data.proximo_empleado || null,
+    };
   }
 
   // Métodos de turnos
@@ -434,7 +570,7 @@ class ApiService {
   }> {
     try {
       const [employees, services, selections] = await Promise.all([
-        this.getUsers(),
+        this.getAllUsers(),
         this.getServices(),
         this.getServiceSelections(year),
       ]);

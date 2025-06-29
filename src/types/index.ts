@@ -73,6 +73,21 @@ export interface ApiResponse<T> {
   data?: T;
   message?: string;
   error?: string;
+  pagination?: PaginationInfo;
+}
+
+export interface PaginationInfo {
+  page: number;
+  limit: number;
+  totalElements: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+}
+
+export interface PaginatedResponse<T> {
+  users: T[];
+  pagination: PaginationInfo;
 }
 
 // Tipos para formularios

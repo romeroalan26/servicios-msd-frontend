@@ -12,6 +12,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Services from "./pages/Services";
 import Calendar from "./pages/Calendar";
+import Users from "./pages/Users";
 import useDocumentTitle from "./hooks/useDocumentTitle";
 import "./index.css";
 
@@ -56,6 +57,17 @@ const App: React.FC = () => {
                 <ProtectedRoute>
                   <Layout>
                     <Calendar />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/users"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Users />
                   </Layout>
                 </ProtectedRoute>
               }
